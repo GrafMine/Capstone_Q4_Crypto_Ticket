@@ -36,6 +36,9 @@ next-env.d.ts
 
 target
 .idea
+.idea/
+/.idea/
+/.idea/*
 
 Cargo.lock
 package-lock.json
