@@ -14,7 +14,7 @@ Different types of users on Crypto-Ticket platform:
     - how many tickets are left
     - A real-time countdown timer showing how much time is left for the particular ticket.
 
-## Core Auction Functionality
+## Core Ticket Functionality
 
 **1. Buy Ticket.** As a user, I want to buy a ticket so that I may try to win the Jackpot. I’m expected to see that:
 
