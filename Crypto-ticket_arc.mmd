@@ -1,0 +1,51 @@
+flowchart TB
+ subgraph Programs["Programs"]
+        LP["Lottery Program"]
+  end
+ subgraph PDAs["PDAs"]
+        TPS["Ticket PDA<br>seeds: ticket_id"]
+        JPS["Jackpot PDA<br>seeds: jackpot"]
+  end
+ subgraph subGraph2["Program Accounts"]
+    direction TB
+        TA["Ticket Account<br>Owner: Lottery Program<br>Data:<br>- is_active: bool<br>- admin: Pubkey<br>- ticket_id: u64"]
+        JA["Jackpot Account<br>Owner: Lottery Program<br>Data:<br>- total_amount: u64<br>- winner: Pubkey"]
+  end
+ subgraph subGraph3["User Accounts"]
+        UA["User SOL Account"]
+        AA["Admin SOL Account"]
+  end
+ subgraph External["External"]
+        DB[("Backend Database<br>- Ticket history<br>- User field numbers<br>- Winners")]
+        n1["Oracle<br>- Generate numbers"]
+  end
+    LP -- derives --> TPS & JPS
+    TPS -- owns --> TA
+    JPS -- owns --> JA
+    UA -- initialize_ticket(ticket_id) --> LP
+    UA -- buy_ticket(ticket_id, amount) --> LP
+    UA -- claim_jackpot(ticket_id) --> LP
+    LP -- transfer(amount) --> UA
+    AA --> |"initialize_ticket(ticket_id, config)"| LP
+    LP -- transfer(fee) --> AA
+    LP -- emit: TicketCreated --> DB
+    LP -- emit: TicketPurchased --> DB
+    LP -- emit: JackpotClaimed --> DB
+    LP -- get: user numbers --> n1
+
+
+    n1
+     LP:::program
+     TPS:::pda
+     JPS:::pda
+     TA:::account
+     JA:::account
+     UA:::account
+     AA:::account
+     DB:::external
+    classDef program fill:#4a90e2,stroke:#333,stroke-width:2px,color:white
+    classDef pda fill:#ff9671,stroke:#333,stroke-width:2px,color:white
+    classDef account fill:#82c91e,stroke:#333,stroke-width:2px
+    classDef external fill:#9775fa,stroke:#333,stroke-width:2px,color:white
+
+

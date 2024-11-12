@@ -1,0 +1,61 @@
+sequenceDiagram
+    participant A as Admin
+    participant U as User Wallet
+    participant B as Backend
+    participant Q as Queue
+    participant TC as Ticket Contract
+    participant JP as Jackpot Pool
+    participant DB as Database
+    
+    %% Создание тикета администратором
+    A->>TC: Create new ticket
+    TC-->>B: Emit event (new ticket created)
+    B->>DB: Store ticket data
+    
+    %% Инициация покупки и очередь
+    U->>B: Click "Buy Ticket"
+    B->>Q: Add user to queue
+    
+    %% Проверка доступности
+    B->>TC: Check if purchase allowed
+    TC-->>B: Purchase available
+    
+    %% Формирование транзакции
+    B->>U: Return transaction for signing
+    
+    %% Процесс покупки
+    U->>TC: Execute purchase ($1)
+    TC->>JP: Transfer 90% to pool
+    TC->>A: Transfer 10% platform fee
+    TC->>TC: Lock new purchases
+    TC-->>B: Emit event (ticketId, pubkey, field)
+    
+    %% Обновление в базе данных
+    B->>DB: Update ticket with user data
+    Note over B,DB: Link user to specific ticket
+    
+    %% Проверка джекпота
+    B->>B: Check buyer's ticket numbers
+    
+    alt No Jackpot for buyer
+        B->>B: Update and check all previous tickets
+        
+        alt No Jackpot found
+            B->>TC: Allow next purchase
+            TC->>TC: Remove purchase lock
+            B->>Q: Process next user in queue
+        else Jackpot found in previous tickets
+            B->>DB: Save jackpot winner data
+            B->>TC: Initiate prize transfer
+            TC->>JP: Get prize amount
+            JP->>U: Transfer prize to winner
+        end
+        
+    else Jackpot found
+        B->>DB: Save jackpot winner data
+        B->>TC: Initiate prize transfer
+        TC->>JP: Get prize amount
+        JP->>U: Transfer prize to winner
+    end
+
+    Note over U,B: If no jackpot, system ready for next user
