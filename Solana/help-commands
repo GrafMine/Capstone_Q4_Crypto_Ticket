@@ -1,0 +1,99 @@
+solana-keygen new --force // создает новый ключ
+-----
+I face this same issue too. Think this will help you. https://medium.com/@lianxiongdi/solana-development-1-basic-operation-of-solana-cli-dcf156137e6
+
+But let me summarize it.
+
+solana-keygen new --outfile solana/id.json (this will create a file called solana, inside will have your new key my_wallet.json)
+solana-keygen pubkey solana/id.json (check your wallet public key, you can skip the verify part and use my method)
+solana config get (to get your details)
+solana config set --keypair solana/id.json (set your keypair to the newly created wallet)
+solana config set --url localhost
+solana config set --url https://api.devnet.solana.com (set it to devnet)
+solana airdrop 2 (airdrop to your wallet)
+solana balance (Ec2x4xwfxgLxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx) (use the public key you obtain in method 2, if it shows 2 then means your config file is correct and the 2 sol airdrop is into correct wallet.)
+anchor build
+solana address -k target/deploy/table-keypair.json (get the programId)
+declare_id!("paste the programId of deployed contract") (put the programId into lib.rs contract)
+[programs.devnet] program_name = "FYp6ubFr3Jxxxxxxxxxxxxxxxxxxxxxxxx" (paste the programId to your Anchor.toml file)
+anchor build
+remember to check your: [provider] cluster = "devnet" wallet = "./tests/test-key.json"
+anchor deploy --provider.cluster devnet
+anchor deploy --provider.cluster Localnet
+Deploy successfully.
+
+
+BXm1EGdK7EwGNFKvsjfZcRpeaXCSHYeTM4Q7JCFo97Fk
+
+// при такой ошибке:
+Ledger location: test-ledger
+Log: test-ledger/validator.log
+Error: failed to start validator: Failed to create ledger at test-ledger: io error: Error checking to unpack genesis archive: Archive error: extra entry found: "._genesis.bin" Regular
+
+делать это:
+rm -rf test-ledger
+rm -rf ~/.local/share/solana/install
+rm -rf ~/.config/solana/
+rm -rf ~/.cache/solana/
+
+это удаляет все что связано с solana и теперь надо ее переустановить
+sh -c "$(curl -sSfL https://release.anza.xyz/stable/install)"
+echo 'export PATH="$HOME/.local/share/solana/install/active_release/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+
+// agave
+sh -c "$(curl -sSfL https://release.anza.xyz/v1.18.18/install)"
+
+
+tar jxf solana-release-aarch64-apple-darwin.tar.bz2
+cd solana-release/
+export PATH=$PWD/bin:$PATH
+
+
+
+///
+
+WSL2 is linux env for windows
+
+
+solana-keygen grind --starts-and-ends-with WBA:J:1 --ignore-case --use-mnemonic
+
+
+// for rust time -> pub created_at: i64, in code -> vault.created_at = Clock::get()?.unix_timestamp;
+
+
+anchor init escrow --template=multiple
+
+
+
+
+/// draw
+
+          const fromAta =await getOrCreateAssociatedTokenAccount(
+          connection,
+          WBAKeypair,
+          NATIVE_MINT,
+          WBAKeypair.publicKey
+        );
+        const toAta = await getOrCreateAssociatedTokenAccount(
+          connection,
+          WBAKeypair,
+          NATIVE_MINT,
+          vault,
+          true
+        );
+
+        console.log(`WBA WALLET: ${WBAKeypair.publicKey}`)
+        const walletBalance = await getBalance(WBAKeypair.publicKey);
+        console.log(`Balance: ${walletBalance}`);
+        numberToSOL(0.01 );
+
+
+        const tx = await transfer(
+          connection,
+          WBAKeypair,
+          fromAta.address,
+          toAta.address,
+          WBAKeypair.publicKey,
+          0.01*1e9, // convert 0.01 SOL to lamports
+        )

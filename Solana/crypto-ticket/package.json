@@ -1,8 +1,30 @@
 {
-  "license": "ISC",  
+  "license": "ISC",
   "scripts": {
     "lint:fix": "prettier */*.js \"*/**/*{.js,.ts}\" -w",
-    "lint": "prettier */*.js \"*/**/*{.js,.ts}\" --check"
+    "lint": "prettier */*.js \"*/**/*{.js,.ts}\" --check",
+    "solana-test-validator": "solana-test-validator",
+    "solana-test-validator:localhost": "solana-test-validator --rpc-bind-address localhost",
+    "solana-test-validator:reset": "solana-test-validator --reset",
+    "solana-set-net-localhost": "solana config set --url localhost",
+    "solana-set-keygen": "solana config set -k ./keys/id.json",
+    "solana-get-config": "solana config get",
+    "solana-airdrop": "solana airdrop 10",
+    "solana-balance": "solana balance",
+    "solana-get-rent": "solana rent 0 --url http://localhost:8899",
+    "solana-program-close": "solana program close <PROGRAM_ID>",
+    "solana-program-close-not-tried-yet": "solana program close --programs --keypair ~/.config/solana/MY_KEYPAIR.json",
+    "solana-show-program-detail": "solana program show Fe9SsRGbU2Jrz1LzeMo2382ENcyyvCtF1u3xfFSBQ5Kx",
+    "solana-deploy-table": "solana program deploy target/deploy/table.so --program-id Fe9SsRGbU2Jrz1LzeMo2382ENcyyvCtF1u3xfFSBQ5Kx",
+    "solana-program-extend-short": "solana program extend Fe9SsRGbU2Jrz1LzeMo2382ENcyyvCtF1u3xfFSBQ5Kx 100",
+    "solana-program-extend": "solana program extend Fe9SsRGbU2Jrz1LzeMo2382ENcyyvCtF1u3xfFSBQ5Kx 100 -u d -k ./solana/id.json",
+    "solana-program-update": "solana-install init 1.18.11",
+    "test": "ANCHOR_PROVIDER_URL=\"http://localhost:8899\" ANCHOR_WALLET=\"./solana/id.json\" npx ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts",
+    "anchor-test": "npm run test --skip-local-validator",
+    "anchor-test2": "anchor test --skip-local-validator",
+    "anchor-buld-local:no-docker": "anchor build --skip-lint",
+    "anchor-build:dockerv30": "anchor build --skip-lint --docker-image backpackapp/build:v0.30.0 -v",
+    "get:declare_id": "solana address -k target/deploy/crypto_ticket-keypair.json"
   },
   "dependencies": {
     "@coral-xyz/anchor": "^0.30.1"
