@@ -13,7 +13,7 @@ solana config set --url https://api.devnet.solana.com (set it to devnet)
 solana airdrop 2 (airdrop to your wallet)
 solana balance (Ec2x4xwfxgLxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx) (use the public key you obtain in method 2, if it shows 2 then means your config file is correct and the 2 sol airdrop is into correct wallet.)
 anchor build
-solana address -k target/deploy/table-keypair.json (get the programId)
+solana address -k target/deploy/crypto_ticket-keypair.json (get the programId)
 declare_id!("paste the programId of deployed contract") (put the programId into lib.rs contract)
 [programs.devnet] program_name = "FYp6ubFr3Jxxxxxxxxxxxxxxxxxxxxxxxx" (paste the programId to your Anchor.toml file)
 anchor build
@@ -31,6 +31,7 @@ Log: test-ledger/validator.log
 Error: failed to start validator: Failed to create ledger at test-ledger: io error: Error checking to unpack genesis archive: Archive error: extra entry found: "._genesis.bin" Regular
 
 делать это:
+rm -rf target
 rm -rf test-ledger
 rm -rf ~/.local/share/solana/install
 rm -rf ~/.config/solana/
@@ -50,6 +51,11 @@ cd solana-release/
 export PATH=$PWD/bin:$PATH
 
 
+Если keypair утерян:
+Создайте новый keypair с тем же public key:
+solana-keygen recover -o new-keypair.json
+При восстановлении введите seed фразу или private key
+Используйте новый файл для деплоя
 
 ///
 

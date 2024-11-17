@@ -20,26 +20,24 @@ pub use state::{
     ticket::{TicketAccount, TicketJackpot}
 };
 
-declare_id!("EMGePWFB5TKj6hDYX1q6tfB6PJNhRLigBVtS7ZNyW5zf");
+declare_id!("8f8WcT97fbiKZyFet48yQVH8jfTh2AWkXbpRjqzXRng9");
 
 #[program]
 pub mod crypto_ticket {
     use super::*;
 
-    // // Базовая инициализация
         pub fn initialize(ctx: Context<Initialize>) -> Result<()> {
-            // initialize_handler(ctx)
              handler(ctx)
         }
 
         // Инициализация билета
-        // pub fn init_ticket(
-        //     ctx: Context<InitializeTicket>,
-        //     ticket_id: u64,
-        //     price: u64,
-        // ) -> Result<()> {
-        //     initialize_ticket(ctx, ticket_id, price)
-        // }
+        pub fn init_ticket(
+            ctx: Context<InitializeTicket>,
+            ticket_id: u64,
+            price: u64,
+        ) -> Result<()> {
+            initialize_ticket(ctx, ticket_id, price)
+        }
 
         // Инициализация чанка участников
         // pub fn init_participants_chunk(

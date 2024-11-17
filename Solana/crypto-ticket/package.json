@@ -12,7 +12,8 @@
     "solana-airdrop": "solana airdrop 10",
     "solana-balance": "solana balance",
     "solana-get-rent": "solana rent 0 --url http://localhost:8899",
-    "solana-program-close": "solana program close <PROGRAM_ID>",
+    "solana-program-show": "solana program show 8f8WcT97fbiKZyFet48yQVH8jfTh2AWkXbpRjqzXRng9",
+    "solana-program-close": "solana program close 8f8WcT97fbiKZyFet48yQVH8jfTh2AWkXbpRjqzXRng9",
     "solana-program-close-not-tried-yet": "solana program close --programs --keypair ~/.config/solana/MY_KEYPAIR.json",
     "solana-show-program-detail": "solana program show Fe9SsRGbU2Jrz1LzeMo2382ENcyyvCtF1u3xfFSBQ5Kx",
     "solana-deploy-table": "solana program deploy target/deploy/table.so --program-id Fe9SsRGbU2Jrz1LzeMo2382ENcyyvCtF1u3xfFSBQ5Kx",
@@ -24,6 +25,7 @@
     "anchor-test2": "anchor test --skip-local-validator",
     "anchor-buld-local:no-docker": "anchor build --skip-lint",
     "anchor-build:dockerv30": "anchor build --skip-lint --docker-image backpackapp/build:v0.30.0 -v",
+    "anchor-deploy:id": "anchor deploy --program-name crypto_ticket --program-keypair target/deploy/crypto_ticket-keypair.json",
     "get:declare_id": "solana address -k target/deploy/crypto_ticket-keypair.json"
   },
   "dependencies": {
