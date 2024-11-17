@@ -71,8 +71,6 @@ pub fn initialize_participants_chunk(
     Ok(())
 }
 
-
-// Контексты инструкций
 #[derive(Accounts)]
 #[instruction(ticket_id: u64)]  // Добавляем ticket_id как параметр
 pub struct InitializeTicket<'info> {

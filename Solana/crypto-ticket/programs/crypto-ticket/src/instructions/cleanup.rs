@@ -34,11 +34,15 @@ pub fn batch_cleanup_chunks(ctx: Context<BatchCleanupChunks>, chunk_indexes: Vec
     require!(!ticket_account.is_active, ErrorCode::TicketStillActive);
 
     for (i, chunk_account) in ctx.remaining_accounts.iter().enumerate() {
+        let ticket_bytes = ticket_account.ticket_id.to_le_bytes();
+        let chunk_bytes = chunk_indexes[i].to_le_bytes();
+
         let chunk_seeds = &[
             b"participants",
-            ticket_account.ticket_id.to_le_bytes().as_ref(),
-            chunk_indexes[i].to_le_bytes().as_ref(),
+            ticket_bytes.as_ref(),
+            chunk_bytes.as_ref(),
         ];
+
         let (expected_address, _) = Pubkey::find_program_address(chunk_seeds, ctx.program_id);
         require!(chunk_account.key() == expected_address, ErrorCode::InvalidChunkAddress);
 

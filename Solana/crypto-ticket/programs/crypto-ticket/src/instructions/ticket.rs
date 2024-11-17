@@ -26,9 +26,14 @@ pub struct BuyTicket<'info> {
     pub system_program: Program<'info, System>,
 }
 
-
 // Покупка билета пользователем
 pub fn buy_ticket(ctx: Context<BuyTicket>, ticket_id: u64) -> Result<()> {
+    // Сначала получаем все AccountInfo, которые нам понадобятся
+    let jackpot_info = &ctx.accounts.ticket_jackpot.to_account_info();
+    let user_info = &ctx.accounts.user.to_account_info();
+    let admin_info = &ctx.accounts.admin.to_account_info();
+
+    // Теперь получаем мутабельные ссылки на аккаунты
     let ticket_account = &mut ctx.accounts.ticket_account;
     let ticket_jackpot = &mut ctx.accounts.ticket_jackpot;
     let current_chunk = &mut ctx.accounts.current_participants_chunk;
@@ -48,29 +53,29 @@ pub fn buy_ticket(ctx: Context<BuyTicket>, ticket_id: u64) -> Result<()> {
     let fee = amount / 10;
     let jackpot_amount = amount - fee;
 
-    // Переводим комиссию админу
+    // Переводим комиссию админу используя сохраненные AccountInfo
     invoke(
         &system_instruction::transfer(
-            &ctx.accounts.user.key(),
-            &ctx.accounts.admin.key(),
+            user_info.key,
+            admin_info.key,
             fee,
         ),
         &[
-            ctx.accounts.user.to_account_info(),
-            ctx.accounts.admin.to_account_info(),
+            user_info.clone(),
+            admin_info.clone(),
         ],
     )?;
 
-    // Переводим основную сумму в джекпот
+    // Переводим основную сумму в джекпот используя сохраненные AccountInfo
     invoke(
         &system_instruction::transfer(
-            &ctx.accounts.user.key(),
-            &ctx.accounts.ticket_jackpot.to_account_info().key,
+            user_info.key,
+            jackpot_info.key,
             jackpot_amount,
         ),
         &[
-            ctx.accounts.user.to_account_info(),
-            ctx.accounts.ticket_jackpot.to_account_info(),
+            user_info.clone(),
+            jackpot_info.clone(),
         ],
     )?;
 
