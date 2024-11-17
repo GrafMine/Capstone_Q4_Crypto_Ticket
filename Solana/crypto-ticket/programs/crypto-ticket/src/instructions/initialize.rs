@@ -1,5 +1,6 @@
-use anchor_lang::prelude::*;
+use crate::state::{ParticipantsChunk, TicketAccount, TicketJackpot};
 use crate::events::{TicketInitializedEvent, ChunkCreatedEvent};
+use anchor_lang::prelude::*;
 
 #[derive(Accounts)]
 pub struct Initialize {}
@@ -47,7 +48,6 @@ pub fn initialize_ticket(
 
     Ok(())
 }
-
 
 // Создание нового чанка участников
 pub fn initialize_participants_chunk(
@@ -126,46 +126,4 @@ pub struct InitializeParticipantsChunk<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
     pub system_program: Program<'info, System>,
-}
-
-
-
-// Структуры аккаунтов
-#[account]
-pub struct TicketAccount {
-    pub is_active: bool,
-    pub admin: Pubkey,
-    pub ticket_id: u64,
-    pub price: u64,
-    pub total_participants: u64,
-}
-
-#[account]
-pub struct TicketJackpot {
-    pub total_amount: u64,
-    pub winner: Pubkey,
-    pub ticket_id: u64,
-    pub is_claimed: bool,
-}
-
-#[account]
-pub struct ParticipantsChunk {
-    pub ticket_id: u64,
-    pub chunk_index: u64,
-    pub current_count: u64,
-    pub participants: Vec<Pubkey>,
-}
-
-
-impl ParticipantsChunk {
-    pub const CHUNK_SIZE: usize = 1000;
-
-    pub fn space() -> usize {
-        8 + // discriminator
-        8 + // ticket_id
-        8 + // chunk_index
-        8 + // current_count
-        4 + // Vec length
-        (32 * Self::CHUNK_SIZE) // Space for 1000 pubkeys
-    }
 }
