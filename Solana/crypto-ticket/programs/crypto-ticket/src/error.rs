@@ -1,3 +1,4 @@
+//programs/crypto-ticket/src/error.rs
 use anchor_lang::prelude::*;
 // Ошибки
 #[error_code]

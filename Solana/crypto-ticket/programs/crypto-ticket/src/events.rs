@@ -1,3 +1,4 @@
+//programs/crypto-ticket/src/events.rs
 use anchor_lang::prelude::*;
 
 // События

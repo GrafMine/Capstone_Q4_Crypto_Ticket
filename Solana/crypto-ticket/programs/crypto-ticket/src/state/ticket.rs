@@ -1,3 +1,4 @@
+//programs/crypto-ticket/src/state/ticket.rs
 use anchor_lang::prelude::*;
 
 // Структуры аккаунтов

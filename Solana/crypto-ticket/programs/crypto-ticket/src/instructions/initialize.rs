@@ -1,3 +1,4 @@
+//programs/crypto-ticket/src/instructions/initialize.rs
 use crate::state::{ParticipantsChunk, TicketAccount, TicketJackpot};
 use crate::events::{TicketInitializedEvent, ChunkCreatedEvent};
 use anchor_lang::prelude::*;

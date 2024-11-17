@@ -1,3 +1,4 @@
+//programs/crypto-ticket/src/instructions/ticket.rs
 use anchor_lang::solana_program::{program::invoke, system_instruction};
 use crate::state::{ParticipantsChunk, TicketAccount, TicketJackpot};
 use crate::events::TicketPurchasedEvent;
