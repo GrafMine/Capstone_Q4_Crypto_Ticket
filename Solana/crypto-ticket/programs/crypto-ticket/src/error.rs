@@ -32,4 +32,10 @@ pub enum ErrorCode {
 
     #[msg("Invalid winner")]
     InvalidWinner,
+
+    #[msg("Invalid randomness data")]
+    InvalidRandomnessData,
+
+    #[msg("Randomness not yet resolved")]
+    RandomnessNotResolved,
 }

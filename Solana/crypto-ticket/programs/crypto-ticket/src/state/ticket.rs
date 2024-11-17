@@ -18,12 +18,3 @@ pub struct TicketJackpot {
     pub ticket_id: u64,
     pub is_claimed: bool,
 }
-
-#[account]
-pub struct TicketHistory {
-    pub ticket_id: u64,
-    pub winner: Pubkey,
-    pub amount: u64,
-    pub participants_count: u64,
-    pub claimed_at: i64,
-}
