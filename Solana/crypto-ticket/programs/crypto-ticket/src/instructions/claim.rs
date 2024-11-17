@@ -1,3 +1,4 @@
+//programs/crypto-ticket/src/instructions/claim.rs
 use crate::state::{ParticipantsChunk, TicketAccount, TicketJackpot};
 use switchboard_on_demand::accounts::RandomnessAccountData;
 use crate::events::JackpotClaimEvent;
