@@ -20,7 +20,7 @@ pub use state::{
     ticket::{TicketAccount, TicketJackpot}
 };
 
-declare_id!("8f8WcT97fbiKZyFet48yQVH8jfTh2AWkXbpRjqzXRng9");
+declare_id!("8sKVvV5NTamS36qakrS7qm45W2xxgmXPMrmGn4NH2gsm");
 
 #[program]
 pub mod crypto_ticket {

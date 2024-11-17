@@ -5,7 +5,7 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-crypto_ticket = "8f8WcT97fbiKZyFet48yQVH8jfTh2AWkXbpRjqzXRng9"
+crypto_ticket = "8sKVvV5NTamS36qakrS7qm45W2xxgmXPMrmGn4NH2gsm"
 
 [registry]
 url = "https://api.apr.dev"
