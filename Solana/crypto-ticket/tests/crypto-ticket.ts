@@ -18,7 +18,7 @@ describe("crypto-ticket", () => {
     // });
     
     // Тестовые данные
-    const ticketId = new anchor.BN(1);
+    const ticketId = new anchor.BN(3);
     const price = new anchor.BN(1000000); // 0.001 SOL в lamports
     
     // Генерируем PDA для аккаунта билета
@@ -55,7 +55,16 @@ describe("crypto-ticket", () => {
         );
     }
     
-  
+    function findChunkAddress(ticketId: anchor.BN, chunkIndex: number): [PublicKey, number] {
+        return PublicKey.findProgramAddressSync(
+            [
+                Buffer.from("participants"),
+                ticketId.toArrayLike(Buffer, "le", 8),
+                new anchor.BN(chunkIndex).toArrayLike(Buffer, "le", 8)
+            ],
+            program.programId
+        );
+    }
     it("Is initialized!", async () => {
         // Add your test here.
         const tx = await program.methods.initialize().rpc();
@@ -154,5 +163,57 @@ describe("crypto-ticket", () => {
         }
     });
     
+    
+    it("Позволяет пользователю купить билет", async () => {
+        const [ticketAddress] = findTicketAddress(ticketId);
+        const [jackpotAddress] = findJackpotAddress(ticketId);
+        const [chunkAddress] = findChunkAddress(ticketId, 0);
+        
+        try {
+            // Получаем начальное состояние
+            const initialTicketAccount = await program.account.ticketAccount.fetch(ticketAddress);
+            const initialJackpotAccount = await program.account.ticketJackpot.fetch(jackpotAddress);
+            const initialChunk = await program.account.participantsChunk.fetch(chunkAddress);
+            
+            // Покупаем билет
+            const tx = await program.methods
+                .buy(ticketId)
+                .accounts({
+                    ticketAccount: ticketAddress,
+                    ticketJackpot: jackpotAddress,
+                    currentParticipantsChunk: chunkAddress,
+                    user: provider.wallet.publicKey,
+                    admin: initialTicketAccount.admin,
+                    systemProgram: anchor.web3.SystemProgram.programId,
+                })
+                .rpc();
+            
+            console.log("Билет куплен, транзакция:", tx);
+            
+            // Проверяем обновленное состояние
+            const updatedTicketAccount = await program.account.ticketAccount.fetch(ticketAddress);
+            const updatedJackpotAccount = await program.account.ticketJackpot.fetch(jackpotAddress);
+            const updatedChunk = await program.account.participantsChunk.fetch(chunkAddress);
+            
+            // Проверяем, что количество участников увеличилось
+            expect(updatedTicketAccount.totalParticipants.toString())
+                .to.equal((initialTicketAccount.totalParticipants.toNumber() + 1).toString());
+            
+            // Проверяем, что сумма джекпота увеличилась (90% от цены билета)
+            const expectedJackpotIncrease = price.toNumber() * 0.9;
+            expect(updatedJackpotAccount.totalAmount.toNumber())
+                .to.equal(initialJackpotAccount.totalAmount.toNumber() + expectedJackpotIncrease);
+            
+            // Проверяем, что пользователь добавлен в чанк
+            expect(updatedChunk.currentCount.toNumber())
+                .to.equal(initialChunk.currentCount.toNumber() + 1);
+            expect(updatedChunk.participants[updatedChunk.currentCount.toNumber() - 1].toString())
+                .to.equal(provider.wallet.publicKey.toString());
+            
+        } catch (error) {
+            console.error("Ошибка при покупке билета:", error);
+            throw error;
+        }
+    });
     
 });

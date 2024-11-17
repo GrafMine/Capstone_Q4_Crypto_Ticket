@@ -11,7 +11,7 @@ pub use constants::*;
 pub use instructions::{
     initialize::*,
     // cleanup::*,
-    // ticket::*,
+    ticket::*,
     // claim::*
 };
 
@@ -47,4 +47,11 @@ pub mod crypto_ticket {
         // ) -> Result<()> {
         //     initialize_participants_chunk(ctx, ticket_id, chunk_index)
         // }
+
+        pub fn buy(
+            ctx: Context<BuyTicket>,
+            ticket_id: u64
+        ) -> Result<()> {
+            buy_ticket(ctx, ticket_id)
+        }
 }
