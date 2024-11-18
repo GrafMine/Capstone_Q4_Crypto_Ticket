@@ -53,7 +53,7 @@ pub fn batch_cleanup_chunks(ctx: Context<BatchCleanupChunks>, chunk_indexes: Vec
 
     emit!(BatchCleanupEvent {
         ticket_id: ticket_account.ticket_id,
-        chunks_cleaned: chunk_indexes.len() as u64,
+        chunks_cleaned: chunk_indexes.len() as i64,
         timestamp: Clock::get()?.unix_timestamp,
     });
 

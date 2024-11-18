@@ -33,8 +33,8 @@ pub mod crypto_ticket {
         // Инициализация билета
         pub fn init_ticket(
             ctx: Context<InitializeTicket>,
-            ticket_id: u64,
-            price: u64,
+            ticket_id: i64,
+            price: i64,
         ) -> Result<()> {
             initialize_ticket(ctx, ticket_id, price)
         }
@@ -50,7 +50,7 @@ pub mod crypto_ticket {
 
         pub fn buy(
             ctx: Context<BuyTicket>,
-            ticket_id: u64
+            ticket_id: i64
         ) -> Result<()> {
             buy_ticket(ctx, ticket_id)
         }

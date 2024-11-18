@@ -5,7 +5,7 @@ use crate::events::JackpotClaimEvent;
 use crate::error::ErrorCode;
 use anchor_lang::prelude::*;
 
-pub fn claim_jackpot(ctx: Context<ClaimJackpot>, ticket_id: u64) -> Result<()> {
+pub fn claim_jackpot(ctx: Context<ClaimJackpot>, ticket_id: i64) -> Result<()> {
     let ticket_account = &mut ctx.accounts.ticket_account;
     let ticket_jackpot = &mut ctx.accounts.ticket_jackpot;
     let clock = Clock::get()?;
@@ -30,9 +30,9 @@ pub fn claim_jackpot(ctx: Context<ClaimJackpot>, ticket_id: u64) -> Result<()> {
     let random_value = randomness_data.get_value(&clock)
         .map_err(|_| ErrorCode::RandomnessNotResolved)?;
 
-    let winner_index = (random_value[0] as u64) % ticket_account.total_participants;
-    let chunk_index = winner_index / ParticipantsChunk::CHUNK_SIZE as u64;
-    let index_in_chunk = winner_index % ParticipantsChunk::CHUNK_SIZE as u64;
+    let winner_index = (random_value[0] as i64) % ticket_account.total_participants;
+    let chunk_index = winner_index / ParticipantsChunk::CHUNK_SIZE as i64;
+    let index_in_chunk = winner_index % ParticipantsChunk::CHUNK_SIZE as i64;
 
     // Проверяем чанк победителя
     let participants_chunk = &ctx.accounts.winner_participants_chunk;
@@ -42,7 +42,7 @@ pub fn claim_jackpot(ctx: Context<ClaimJackpot>, ticket_id: u64) -> Result<()> {
     );
 
     // Получаем победителя
-    let winner_pubkey = participants_chunk.participants[index_in_chunk as usize];
+    let winner_pubkey = participants_chunk.participants[index_in_chunk as usize].pubkey;
     require!(
         ctx.accounts.winner.key() == winner_pubkey,
         ErrorCode::InvalidWinner
@@ -50,8 +50,8 @@ pub fn claim_jackpot(ctx: Context<ClaimJackpot>, ticket_id: u64) -> Result<()> {
 
     // Выплата джекпота
     let amount = ticket_jackpot.total_amount;
-    **ticket_jackpot.to_account_info().try_borrow_mut_lamports()? -= amount;
-    **ctx.accounts.winner.to_account_info().try_borrow_mut_lamports()? += amount;
+    **ticket_jackpot.to_account_info().try_borrow_mut_lamports()? -= amount as u64;
+    **ctx.accounts.winner.to_account_info().try_borrow_mut_lamports()? += amount as u64;
 
     // Обновляем состояние
     ticket_jackpot.is_claimed = true;
@@ -71,7 +71,7 @@ pub fn claim_jackpot(ctx: Context<ClaimJackpot>, ticket_id: u64) -> Result<()> {
 }
 
 #[derive(Accounts)]
-#[instruction(ticket_id: u64)]
+#[instruction(ticket_id: i64)]
 pub struct ClaimJackpot<'info> {
     #[account(
         mut,
@@ -108,3 +108,22 @@ pub struct ClaimJackpot<'info> {
 
     pub system_program: Program<'info, System>,
 }
+
+// функцию для проверки timestamp и получения случайного значения
+// pub fn verify_random_value(
+//     randomness_data: &RandomnessAccountData,
+//     saved_timestamp: i64,
+// ) -> Result<[u8; 32]> {
+//     // Создаем Clock со старым timestamp
+//     let historical_clock = Clock {
+//         unix_timestamp: saved_timestamp,  // Наш сохраненный timestamp
+//         slot: 0,                         // Эти поля можно заполнить нулями
+//         epoch_start_timestamp: 0,        // так как Switchboard использует
+//         epoch: 0,                        // только unix_timestamp
+//         leader_schedule_epoch: 0,
+//     };
+
+//     // Получаем то же самое случайное значение
+//     // randomness_data.get_value(&historical_clock)
+//     //     .map_err(|_| ErrorCode::InvalidRandomnessData)
+// }

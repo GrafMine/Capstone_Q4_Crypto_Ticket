@@ -14,8 +14,8 @@ pub fn handler(ctx: Context<Initialize>) -> Result<()> {
 // Создание нового билета администратором
 pub fn initialize_ticket(
     ctx: Context<InitializeTicket>,
-    ticket_id: u64,
-    price: u64,
+    ticket_id: i64,
+    price: i64,
 ) -> Result<()> {
     let ticket_account = &mut ctx.accounts.ticket_account;
     let ticket_jackpot = &mut ctx.accounts.ticket_jackpot;
@@ -53,8 +53,8 @@ pub fn initialize_ticket(
 // Создание нового чанка участников
 pub fn initialize_participants_chunk(
     ctx: Context<InitializeParticipantsChunk>,
-    ticket_id: u64,
-    chunk_index: u64,
+    ticket_id: i64,
+    chunk_index: i64,
 ) -> Result<()> {
     let chunk = &mut ctx.accounts.participants_chunk;
     chunk.ticket_id = ticket_id;
@@ -72,7 +72,7 @@ pub fn initialize_participants_chunk(
 }
 
 #[derive(Accounts)]
-#[instruction(ticket_id: u64)]  // Добавляем ticket_id как параметр
+#[instruction(ticket_id: i64)]  // Добавляем ticket_id как параметр
 pub struct InitializeTicket<'info> {
     #[account(
         init,
