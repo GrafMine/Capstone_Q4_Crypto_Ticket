@@ -1,3 +1,4 @@
+import { SwitchboardOnDemandService, loadSwitchboardOnDemandQueue } from '@switchboard-xyz/on-demand';
 import type { CryptoTicket } from "../target/types/crypto_ticket";
 import { PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
 import * as anchor from "@coral-xyz/anchor";
@@ -18,7 +19,7 @@ describe("crypto-ticket", () => {
     // });
 
     // Тестовые данные
-    const ticketId = new anchor.BN(3);
+    const ticketId = new anchor.BN(4);
     const price = new anchor.BN(1000000); // 0.001 SOL в lamports
 
     // Генерируем PDA для аккаунта билета
@@ -238,5 +239,12 @@ describe("crypto-ticket", () => {
             console.log(`\nTotal size: ${totalSize} bytes`);
             console.log(`Total rent needed: ${totalRent/LAMPORTS_PER_SOL} SOL`);
         });
+
+    it("Calculates rent for accounts", async () => {
+        // Размер для ParticipantsChunk с новым CHUNK_SIZE = 50
+        const chunkSize = 8 + 8 + 8 + 8 + (41 * 50) + (67 * 50);
+        const chunkRent = await provider.connection.getMinimumBalanceForRentExemption(chunkSize);
+        console.log(`Rent for ParticipantsChunk (${chunkSize} bytes): ${chunkRent/LAMPORTS_PER_SOL} SOL`);
+    });
 
 });

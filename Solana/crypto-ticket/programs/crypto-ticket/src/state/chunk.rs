@@ -14,7 +14,7 @@ pub struct ParticipantsChunk {
 }
 
 impl ParticipantsChunk {
-    pub const CHUNK_SIZE: usize = 100;
+    pub const CHUNK_SIZE: usize = 50;
 
     pub fn space() -> usize {
         8 + // discriminator
