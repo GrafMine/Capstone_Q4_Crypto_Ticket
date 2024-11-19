@@ -5,7 +5,7 @@ use crate::events::JackpotClaimEvent;
 use crate::error::ErrorCode;
 use anchor_lang::prelude::*;
 
-pub fn claim_jackpot(ctx: Context<ClaimJackpot>, ticket_id: i64) -> Result<()> {
+pub fn claim_jackpot(ctx: Context<ClaimJackpot>, ticket_id: u64) -> Result<()> {
     let ticket_account = &mut ctx.accounts.ticket_account;
     let ticket_jackpot = &mut ctx.accounts.ticket_jackpot;
     let clock = Clock::get()?;
@@ -30,9 +30,9 @@ pub fn claim_jackpot(ctx: Context<ClaimJackpot>, ticket_id: i64) -> Result<()> {
     let random_value = randomness_data.get_value(&clock)
         .map_err(|_| ErrorCode::RandomnessNotResolved)?;
 
-    let winner_index = (random_value[0] as i64) % ticket_account.total_participants;
-    let chunk_index = winner_index / ParticipantsChunk::CHUNK_SIZE as i64;
-    let index_in_chunk = winner_index % ParticipantsChunk::CHUNK_SIZE as i64;
+    let winner_index = (random_value[0] as u64) % ticket_account.total_participants;
+    let chunk_index = winner_index / ParticipantsChunk::CHUNK_SIZE as u64;
+    let index_in_chunk = winner_index % ParticipantsChunk::CHUNK_SIZE as u64;
 
     // Проверяем чанк победителя
     let participants_chunk = &ctx.accounts.winner_participants_chunk;
@@ -64,14 +64,14 @@ pub fn claim_jackpot(ctx: Context<ClaimJackpot>, ticket_id: i64) -> Result<()> {
         amount,
         chunk_index,
         index_in_chunk,
-        timestamp: clock.unix_timestamp,
+        timestamp: clock.unix_timestamp as u64,
     });
 
     Ok(())
 }
 
 #[derive(Accounts)]
-#[instruction(ticket_id: i64)]
+#[instruction(ticket_id: u64)]
 pub struct ClaimJackpot<'info> {
     #[account(
         mut,
@@ -112,7 +112,7 @@ pub struct ClaimJackpot<'info> {
 // функцию для проверки timestamp и получения случайного значения
 // pub fn verify_random_value(
 //     randomness_data: &RandomnessAccountData,
-//     saved_timestamp: i64,
+//     saved_timestamp: u64,
 // ) -> Result<[u8; 32]> {
 //     // Создаем Clock со старым timestamp
 //     let historical_clock = Clock {

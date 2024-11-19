@@ -6,7 +6,7 @@ const MAX_PLAYER_FIELD_SIZE: usize = 9;
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Default)]
 pub struct Player {
     pub pubkey: Pubkey,
-    pub field: [i8; 9]
+    pub field: [u8; 9]
 }
 
 impl Player {

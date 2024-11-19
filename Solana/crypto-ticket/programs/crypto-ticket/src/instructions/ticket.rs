@@ -31,7 +31,7 @@ pub struct BuyTicket<'info> {
 }
 
 // Покупка билета пользователем
-pub fn buy_ticket(ctx: Context<BuyTicket>, ticket_id: i64) -> Result<()> {
+pub fn buy_ticket(ctx: Context<BuyTicket>, ticket_id: u64) -> Result<()> {
     // Сначала получаем все AccountInfo, которые нам понадобятся
     let jackpot_info = &ctx.accounts.ticket_jackpot.to_account_info();
     let user_info = &ctx.accounts.user.to_account_info();
@@ -48,7 +48,7 @@ pub fn buy_ticket(ctx: Context<BuyTicket>, ticket_id: i64) -> Result<()> {
     require!(ticket_account.ticket_id == ticket_jackpot.ticket_id, ErrorCode::InvalidTicketJackpot);
 
     // Проверяем, не заполнен ли текущий чанк
-    if current_chunk.current_count >= ParticipantsChunk::CHUNK_SIZE as i64 {
+    if current_chunk.current_count >= ParticipantsChunk::CHUNK_SIZE as u64 {
         return Err(ErrorCode::ChunkIsFull.into());
     }
 
@@ -91,15 +91,15 @@ pub fn buy_ticket(ctx: Context<BuyTicket>, ticket_id: i64) -> Result<()> {
         .map_err(|_| ErrorCode::RandomnessNotResolved)?;
 
     // Генерируем случайное поле для игрока (9 чисел от 0 до 8)
-    let mut field = [0i8; 9];
+    let mut field = [0u8; 9];
     for i in 0..9 {
-        field[i] = (random_value[i % random_value.len()] % 9) as i8;
+        field[i] = (random_value[i % random_value.len()] % 9) as u8;
     }
 
     // Генерируем случайные значения для раунда
-    let index = (random_value[9] % 9) as i8;  // 0-8
-    let dir = (random_value[10] % 4) as i8;   // 0-3 (направления)
-    let diff = (random_value[11] % 3) as i8;  // 0-2 (сложность)
+    let index = (random_value[9] % 9) as u8;  // 0-8
+    let dir = (random_value[10] % 4) as u8;   // 0-3 (направления)
+    let diff = (random_value[11] % 3) as u8;  // 0-2 (сложность)
 
     // Добавляем участника в текущий чанк
     current_chunk.participants.push(Player {
@@ -107,7 +107,7 @@ pub fn buy_ticket(ctx: Context<BuyTicket>, ticket_id: i64) -> Result<()> {
         field
     });
     current_chunk.rounds_history.push(Round {
-        timestamp: clock.unix_timestamp,
+        timestamp: clock.unix_timestamp as u64,
         index,
         dir,
         diff
@@ -128,7 +128,7 @@ pub fn buy_ticket(ctx: Context<BuyTicket>, ticket_id: i64) -> Result<()> {
         amount,
         chunk_index: current_chunk.chunk_index,
         participant_index: current_chunk.current_count - 1,
-        timestamp: Clock::get()?.unix_timestamp,
+        timestamp: Clock::get()?.unix_timestamp as u64,
     });
 
     Ok(())

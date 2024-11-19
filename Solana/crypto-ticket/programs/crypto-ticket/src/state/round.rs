@@ -3,10 +3,10 @@ use anchor_lang::prelude::*;
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Default)]
 pub struct Round {
-    pub timestamp: i64, // Clock::get()?.unix_timestamp
-    pub index: i8, // 0-8
-    pub dir: i8, // 0-3
-    pub diff: i8, // 0-1
+    pub timestamp: u64, // Clock::get()?.unix_timestamp
+    pub index: u8, // 0-8
+    pub dir: u8, // 0-3
+    pub diff: u8, // 0-1
 }
 
 impl Round {

@@ -6,9 +6,9 @@ use super::Round;
 
 #[account]
 pub struct ParticipantsChunk {
-    pub ticket_id: i64,
-    pub chunk_index: i64,
-    pub current_count: i64,
+    pub ticket_id: u64,
+    pub chunk_index: u64,
+    pub current_count: u64,
     pub participants: Vec<Player>,
     pub rounds_history: Vec<Round>,
 }
