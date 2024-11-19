@@ -1,3 +1,4 @@
+use crate::log_event;
 //programs/crypto-ticket/src/instructions/initialize.rs
 use crate::state::{ParticipantsChunk, TicketAccount, TicketJackpot};
 use crate::events::{TicketInitializedEvent, ChunkCreatedEvent};
@@ -40,7 +41,7 @@ pub fn initialize_ticket(
     first_chunk.current_count = 0;
     first_chunk.participants = Vec::with_capacity(ParticipantsChunk::CHUNK_SIZE);
 
-    emit!(TicketInitializedEvent {
+    log_event!(TicketInitializedEvent {
         ticket_id,
         admin: ctx.accounts.admin.key(),
         price,
@@ -62,7 +63,7 @@ pub fn initialize_participants_chunk(
     chunk.current_count = 0;
     chunk.participants = Vec::with_capacity(ParticipantsChunk::CHUNK_SIZE);
 
-    emit!(ChunkCreatedEvent {
+    log_event!(ChunkCreatedEvent {
         ticket_id,
         chunk_index,
         timestamp: Clock::get()?.unix_timestamp as u64,

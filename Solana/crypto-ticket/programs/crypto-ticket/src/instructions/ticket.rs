@@ -1,3 +1,4 @@
+use crate::log_event;
 //programs/crypto-ticket/src/instructions/ticket.rs
 use crate::state::{ParticipantsChunk, Player, Round, TicketAccount, TicketJackpot};
 use anchor_lang::solana_program::{program::invoke, system_instruction};
@@ -118,7 +119,7 @@ pub fn buy_ticket(ctx: Context<BuyTicket>, ticket_id: u64) -> Result<()> {
     // Обновляем суммы
     ticket_jackpot.total_amount += jackpot_amount;
 
-    emit!(TicketPurchasedEvent {
+    log_event!(TicketPurchasedEvent {
         ticket_id,
         user_id: ctx.accounts.user.key(),
         user_field: field,

@@ -1,5 +1,6 @@
 //programs/crypto-ticket/src/instructions/cleanup.rs
 use crate::events::{ChunkCleanedEvent, BatchCleanupEvent};
+use crate::log_event;
 use crate::state::{ParticipantsChunk, TicketAccount};
 use anchor_lang::prelude::*;
 use crate::error::ErrorCode;
@@ -19,7 +20,7 @@ pub fn cleanup_participants_chunk(ctx: Context<CleanupParticipantsChunk>) -> Res
     **chunk.to_account_info().try_borrow_mut_lamports()? = 0;
     **admin.to_account_info().try_borrow_mut_lamports()? += chunk_lamports;
 
-    emit!(ChunkCleanedEvent {
+    log_event!(ChunkCleanedEvent {
         ticket_id: chunk.ticket_id,
         chunk_index: chunk.chunk_index,
         timestamp: Clock::get()?.unix_timestamp as u64,
@@ -51,7 +52,7 @@ pub fn batch_cleanup_chunks(ctx: Context<BatchCleanupChunks>, chunk_indexes: Vec
         **ctx.accounts.admin.to_account_info().try_borrow_mut_lamports()? += chunk_lamports;
     }
 
-    emit!(BatchCleanupEvent {
+    log_event!(BatchCleanupEvent {
         ticket_id: ticket_account.ticket_id,
         chunks_cleaned: chunk_indexes.len() as u64,
         timestamp: Clock::get()?.unix_timestamp as u64,

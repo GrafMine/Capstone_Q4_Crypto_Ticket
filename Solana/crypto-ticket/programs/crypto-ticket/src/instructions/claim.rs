@@ -3,6 +3,7 @@ use crate::state::{ParticipantsChunk, TicketAccount, TicketJackpot};
 use switchboard_on_demand::accounts::RandomnessAccountData;
 use crate::events::JackpotClaimEvent;
 use crate::error::ErrorCode;
+use crate::log_event;
 use anchor_lang::prelude::*;
 
 pub fn claim_jackpot(ctx: Context<ClaimJackpot>, ticket_id: u64) -> Result<()> {
@@ -58,7 +59,7 @@ pub fn claim_jackpot(ctx: Context<ClaimJackpot>, ticket_id: u64) -> Result<()> {
     ticket_jackpot.winner = winner_pubkey;
     ticket_account.is_active = false;
 
-    emit!(JackpotClaimEvent {
+    log_event!(JackpotClaimEvent {
         ticket_id,
         winner: winner_pubkey,
         amount,
