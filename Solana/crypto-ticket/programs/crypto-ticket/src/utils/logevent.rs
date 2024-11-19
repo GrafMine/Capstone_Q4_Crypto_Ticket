@@ -1,3 +1,4 @@
+//programs/crypto-ticket/src/utils/logevent.rs
 #[macro_export]
 macro_rules! log_event {
     ($event_data:expr) => {{
