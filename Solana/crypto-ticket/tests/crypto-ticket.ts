@@ -1,6 +1,5 @@
-import { SwitchboardOnDemandService, loadSwitchboardOnDemandQueue } from '@switchboard-xyz/on-demand';
+import { PublicKey, LAMPORTS_PER_SOL, Keypair } from '@solana/web3.js';
 import type { CryptoTicket } from "../target/types/crypto_ticket";
-import { PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import { expect } from 'chai';
@@ -11,15 +10,8 @@ describe("crypto-ticket", () => {
     anchor.setProvider(provider);
 
     const program = anchor.workspace.CryptoTicket as Program<CryptoTicket>;
-
-    // Проверяем, что используем правильный ID программы
-    // before(() => {
-    //     // console.log("Program ID:", program.programId.toString());
-    //     expect(program.programId.toString()).to.equal("8sKVvV5NTamS36qakrS7qm45W2xxgmXPMrmGn4NH2gsm");
-    // });
-
     // Тестовые данные
-    const ticketId = new anchor.BN(4);
+    const ticketId = new anchor.BN(9);
     const price = new anchor.BN(1000000); // 0.001 SOL в lamports
 
     // Генерируем PDA для аккаунта билета
@@ -74,9 +66,9 @@ describe("crypto-ticket", () => {
     });
 
     // Вспомогательная функция для просмотра IDL
-    it("Выводит IDL для проверки названий аккаунтов", async () => {
-        // console.log(JSON.stringify(program.idl, null, 2));
-    });
+    // it("Выводит IDL для проверки названий аккаунтов", async () => {
+    //     // console.log(JSON.stringify(program.idl, null, 2));
+    // });
 
     it("Инициализирует новый билет", async () => {
         const [ticketAddress] = findTicketAddress(ticketId);
@@ -129,42 +121,7 @@ describe("crypto-ticket", () => {
             throw error;
         }
     });
-
-    it("Не позволяет повторно инициализировать билет с тем же ID", async () => {
-        const [ticketAddress] = findTicketAddress(ticketId);
-        const [jackpotAddress] = findJackpotAddress(ticketId);
-        const [firstChunkAddress] = findFirstChunkAddress(ticketId);
-
-        try {
-            await program.methods
-                .initTicket(ticketId, price)
-                .accounts({
-                    ticketAccount: ticketAddress,
-                    ticketJackpot: jackpotAddress,
-                    firstParticipantsChunk: firstChunkAddress,
-                    admin: provider.wallet.publicKey,
-                    systemProgram: anchor.web3.SystemProgram.programId,
-                })
-                .rpc();
-
-            throw new Error("Ожидалась ошибка при повторной инициализации");
-        } catch (error: any) {
-            // Выводим полное сообщение об ошибке для отладки
-            console.log("Полученная ошибка:", error);
-
-            if (error.logs) {
-                console.log("Логи транзакции:", error.logs);
-            }
-
-            // Проверяем, что это ошибка симуляции транзакции
-            expect(error.toString()).to.include("already in use");
-            // Проверяем логи транзакции, если они есть
-            if (error.logs) {
-                console.log("Логи транзакции:", error.logs);
-            }
-        }
-    });
-
+    
     it("Позволяет пользователю купить билет", async () => {
         const [ticketAddress] = findTicketAddress(ticketId);
         const [jackpotAddress] = findJackpotAddress(ticketId);
@@ -208,7 +165,7 @@ describe("crypto-ticket", () => {
             // Проверяем, что пользователь добавлен в чанк
             expect(updatedChunk.currentCount.toNumber())
                 .to.equal(initialChunk.currentCount.toNumber() + 1);
-            expect(updatedChunk.participants[updatedChunk.currentCount.toNumber() - 1].toString())
+            expect(updatedChunk.participants[updatedChunk.currentCount.toNumber() - 1].pubkey.toString())
                 .to.equal(provider.wallet.publicKey.toString());
 
         } catch (error) {
@@ -216,7 +173,42 @@ describe("crypto-ticket", () => {
             throw error;
         }
     });
-
+    
+    it("Не позволяет повторно инициализировать билет с тем же ID", async () => {
+        const [ticketAddress] = findTicketAddress(ticketId);
+        const [jackpotAddress] = findJackpotAddress(ticketId);
+        const [firstChunkAddress] = findFirstChunkAddress(ticketId);
+        
+        try {
+            await program.methods
+                .initTicket(ticketId, price)
+                .accounts({
+                    ticketAccount: ticketAddress,
+                    ticketJackpot: jackpotAddress,
+                    firstParticipantsChunk: firstChunkAddress,
+                    admin: provider.wallet.publicKey,
+                    systemProgram: anchor.web3.SystemProgram.programId,
+                })
+                .rpc();
+            
+            throw new Error("Ожидалась ошибка при повторной инициализации");
+        } catch (error: any) {
+            // Выводим полное сообщение об ошибке для отладки
+            console.log("Полученная ошибка:", error);
+            
+            if (error.logs) {
+                console.log("Логи транзакции:", error.logs);
+            }
+            
+            // Проверяем, что это ошибка симуляции транзакции
+            expect(error.toString()).to.include("already in use");
+            // Проверяем логи транзакции, если они есть
+            if (error.logs) {
+                console.log("Логи транзакции:", error.logs);
+            }
+        }
+    });
+    
     it("Calculates rent for accounts", async () => {
             // Размер для TicketAccount
             const ticketSize = 65; // 8 + 1 + 32 + 8 + 8 + 8

@@ -2,7 +2,6 @@ use crate::log_event;
 //programs/crypto-ticket/src/instructions/ticket.rs
 use crate::state::{ParticipantsChunk, Player, Round, TicketAccount, TicketJackpot};
 use anchor_lang::solana_program::{program::invoke, system_instruction};
-use switchboard_on_demand::accounts::RandomnessAccountData;
 use crate::events::TicketPurchasedEvent;
 use crate::error::ErrorCode;
 use anchor_lang::prelude::*;
@@ -24,9 +23,6 @@ pub struct BuyTicket<'info> {
     /// CHECK: Admin receives fees
     #[account(mut)]
     pub admin: AccountInfo<'info>,
-
-    /// CHECK: Switchboard randomness account
-    pub randomness_account_data: AccountInfo<'info>,
 
     pub system_program: Program<'info, System>,
 }
@@ -85,11 +81,7 @@ pub fn buy_ticket(ctx: Context<BuyTicket>, ticket_id: u64) -> Result<()> {
     )?;
 
     let clock = Clock::get()?;
-    let randomness_data = RandomnessAccountData::parse(
-        ctx.accounts.randomness_account_data.data.borrow()
-    ).map_err(|_| ErrorCode::InvalidRandomnessData)?;
-    let random_value = randomness_data.get_value(&clock)
-        .map_err(|_| ErrorCode::RandomnessNotResolved)?;
+    let random_value = ctx.accounts.user.key().to_bytes();
 
     // Генерируем случайное поле для игрока (9 чисел от 0 до 8)
     let mut field = [0u8; 9];
