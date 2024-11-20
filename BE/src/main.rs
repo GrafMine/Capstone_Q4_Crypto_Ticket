@@ -1,15 +1,23 @@
 use std::sync::Arc;
 use actix_web::{web, App, HttpServer};
+use ticket_initialized_event::TicketInitializedEvent;
 use tokio::sync::RwLock;
+use solana_client::{nonblocking::pubsub_client::PubsubClient, rpc_client::RpcClient};
+use solana_sdk::{
+    commitment_config::CommitmentConfig,
+    signature::{Keypair, Signature, Signer},
+};
 
 mod services;
 use services::pubsub_service::PubSubService;
 
 mod events;
-use events::register_event::RegistrationEvent;
+use events::*;
 
 mod constants;
 use constants::{PROGRAM_ID, SERVER_HOST, WS_BLOCKCAIN_HOST};
+
+mod routes;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -25,13 +33,13 @@ async fn main() -> std::io::Result<()> {
         if let Err(e) = on_event_received(pubsub_service_clone).await {
             
             eprintln!("Error in event listener: {:?}", e);
-
         }
     });
 
     // Start the Actix Web server
     HttpServer::new(move || {
         App::new()
+        .configure(routes::init)
             .app_data(web::Data::new(pubsub_service.clone()))
     })
         .bind(SERVER_HOST)?
@@ -44,7 +52,7 @@ async fn on_event_received(pubsub_service: Arc<RwLock<PubSubService>>) -> Result
     let pubsub_service = pubsub_service.write().await;
 
     // Add event listener
-    pubsub_service.add_event_listener("RegistrationEvent", |event: RegistrationEvent| {
+    pubsub_service.add_event_listener(|event: TicketInitializedEvent| {
         
         println!("Received registration event: {:?}", event);
 
