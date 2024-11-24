@@ -27,7 +27,9 @@ impl PubSubService {
                     pub_key: pub_key.to_string(),
                 })
             },
-            Err(e) => Err(Box::new(e)),
+            Err(e) => {
+                Err(Box::new(e))
+            },
         }
     }
 
@@ -38,7 +40,7 @@ impl PubSubService {
         }
     }
 
-    pub async fn add_event_listener<F, T>(&self, event_type: &str, action: F) -> Result<(), Box<dyn std::error::Error>>
+    pub async fn add_event_listener<F, T>(&self, action: F) -> Result<(), Box<dyn std::error::Error>>
     where
         F: Fn(T) + Send + 'static,
         T: std::fmt::Debug + BorshDeserialize + 'static,
@@ -49,10 +51,17 @@ impl PubSubService {
 
         let (mut logs, _unsubscribe) = self.client.logs_subscribe(filter, config).await?;
 
+        let event_type = std::any::type_name::<T>()
+            .split("::")
+            .last()
+            .unwrap_or("Unknown");
+    
         while let Some(log) = logs.next().await {
             
-            let event_prefix = format!("Program log: {}:{}:\"", LOG_EVENT_KEY, event_type);
-
+            let event_prefix = format!("Program log: {}:{}:", LOG_EVENT_KEY, event_type);
+            
+            println!("Received log: {:?}", log);
+            println!("event_prefix: {:?}", event_prefix);
             if let Some(event) = log.value.logs.into_iter()
                 .find(|line| line.contains(&event_prefix))
                 .and_then(|line| line.split(&event_prefix).nth(1).map(|s| s.to_string()))
