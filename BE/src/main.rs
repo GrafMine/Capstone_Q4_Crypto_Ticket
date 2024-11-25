@@ -18,6 +18,8 @@ mod constants;
 use constants::{PROGRAM_ID, SERVER_HOST, WS_BLOCKCAIN_HOST};
 
 mod routes;
+mod field;
+mod utils;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
