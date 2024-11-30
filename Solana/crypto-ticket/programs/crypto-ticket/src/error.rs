@@ -15,6 +15,12 @@ pub enum ErrorCode {
     #[msg("Jackpot already claimed")]
     JackpotAlreadyClaimed,
 
+    #[msg("Empty jackpot")]
+    EmptyJackpot,
+
+    #[msg("Invalid jackpot amount")]
+    InvalidJackpotAmount,
+    
     #[msg("No participants in the lottery")]
     NoParticipants,
 
@@ -56,4 +62,7 @@ pub enum ErrorCode {
 
     #[msg("Randomness not yet resolved")]
     RandomnessNotResolved,
+
+    #[msg("Calculation error")]
+    CalculationError,
 }

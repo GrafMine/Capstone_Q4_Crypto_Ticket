@@ -37,6 +37,14 @@ pub struct JackpotClaimEvent {
 }
 
 #[event]
+pub struct TicketFinishedEvent {
+    pub ticket_id: u64,
+    pub total_participants: u64,
+    pub total_jackpot: u64,
+    pub timestamp: u64,
+}
+
+#[event]
 pub struct ChunkCreatedEvent {
     pub ticket_id: u64,
     pub chunk_index: u64,
