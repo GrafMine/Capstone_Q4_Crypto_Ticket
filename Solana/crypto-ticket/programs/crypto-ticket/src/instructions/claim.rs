@@ -1,71 +1,114 @@
 //programs/crypto-ticket/src/instructions/claim.rs
 use crate::state::{ParticipantsChunk, TicketAccount, TicketJackpot};
-use switchboard_on_demand::accounts::RandomnessAccountData;
 use crate::events::JackpotClaimEvent;
 use crate::error::ErrorCode;
 use crate::log_event;
 use anchor_lang::prelude::*;
 
-pub fn claim_jackpot(ctx: Context<ClaimJackpot>, ticket_id: u64) -> Result<()> {
+pub fn claim_jackpot<'info>(ctx: Context<'info, 'info, 'info, 'info, ClaimJackpot<'info>>, ticket_id: u64) -> Result<()> {
     let ticket_account = &mut ctx.accounts.ticket_account;
     let ticket_jackpot = &mut ctx.accounts.ticket_jackpot;
-    let clock = Clock::get()?;
-
-    // Проверки
+    
+    // Только адин может инициировать выплату джекпота
     require!(
-        ticket_account.admin == ctx.accounts.admin.key(),
+        ticket_account.admin == ctx.accounts.user.key(),
         ErrorCode::UnauthorizedAccess
     );
-    require!(
-        ticket_account.ticket_id == ticket_jackpot.ticket_id,
-        ErrorCode::InvalidTicketJackpot
-    );
+
+    // Проверка на активность тикета и статус джекпота
     require!(!ticket_jackpot.is_claimed, ErrorCode::JackpotAlreadyClaimed);
     require!(ticket_account.total_participants > 0, ErrorCode::NoParticipants);
+    
+    // Расчет расположения победителя. Победитель находится в последнем чанке
+    let total_participants = ticket_account.total_participants;
+    let total_chunks = (total_participants + ParticipantsChunk::CHUNK_SIZE as u64 - 1) / ParticipantsChunk::CHUNK_SIZE as u64;
+    let last_chunk_index = (total_participants - 1) / ParticipantsChunk::CHUNK_SIZE as u64;
+    let position_in_last_chunk = (total_participants - 1) % ParticipantsChunk::CHUNK_SIZE as u64;
 
-    // Получаем данные случайности от Switchboard
-    let randomness_data = RandomnessAccountData::parse(
-        ctx.accounts.randomness_account_data.data.borrow()
-    ).map_err(|_| ErrorCode::InvalidRandomnessData)?;
+    // Проверка всех чанков
+    let mut participants_count = 0;
+    let mut last_timestamp = 0;
+    let mut is_winner_verified = false;
 
-    let random_value = randomness_data.get_value(&clock)
-        .map_err(|_| ErrorCode::RandomnessNotResolved)?;
+    for (i, chunk_account) in ctx.remaining_accounts.iter().enumerate() {
+        
+        let chunk_data = Account::<ParticipantsChunk>::try_from(chunk_account)?;
 
-    let winner_index = (random_value[0] as u64) % ticket_account.total_participants;
-    let chunk_index = winner_index / ParticipantsChunk::CHUNK_SIZE as u64;
-    let index_in_chunk = winner_index % ParticipantsChunk::CHUNK_SIZE as u64;
+        // Убеждаемся, что чанк принадлежит тому же тикету
+        require!(
+            chunk_data.ticket_id == ticket_id,
+            ErrorCode::InvalidChunkData
+        );
 
-    // Проверяем чанк победителя
-    let participants_chunk = &ctx.accounts.winner_participants_chunk;
+        // убеждаемся, что чанк находится в последовательности
+        require!(
+            chunk_data.chunk_index == i as u64,
+            ErrorCode::InvalidChunkSequence
+        );
+
+        // Проверка последовательности timestamp
+        for round in &chunk_data.rounds_history {
+            require!(
+                round.timestamp >= last_timestamp,
+                ErrorCode::InvalidTimestampSequence
+            );
+            last_timestamp = round.timestamp;
+        }
+
+        participants_count += chunk_data.current_count;
+
+        // Проверка победителя
+        if chunk_data.chunk_index == last_chunk_index {
+
+            // Недопускаем ситуацию, когда в последнем чанке нет участников
+            require!(
+                chunk_data.current_count > position_in_last_chunk,
+                ErrorCode::InvalidChunkData
+            );
+
+            let winner = &chunk_data.participants[position_in_last_chunk as usize];
+
+            // Проверка победителя
+            require!(
+                ctx.accounts.winner.key() == winner.pubkey,
+                ErrorCode::InvalidWinner
+            );
+            is_winner_verified = true;
+        }
+    }
+
+    // Проверка наличия всех чанков
     require!(
-        participants_chunk.chunk_index == chunk_index,
-        ErrorCode::InvalidChunkIndex
+        ctx.remaining_accounts.len() == total_chunks as usize,
+        ErrorCode::MissingChunks
     );
 
-    // Получаем победителя
-    let winner_pubkey = participants_chunk.participants[index_in_chunk as usize].pubkey;
+    // Проверка количества участников
     require!(
-        ctx.accounts.winner.key() == winner_pubkey,
-        ErrorCode::InvalidWinner
+        participants_count == total_participants,
+        ErrorCode::ParticipantCountMismatch
     );
 
-    // Выплата джекпота
+    // Проверка победителя
+    require!(is_winner_verified, ErrorCode::WinnerNotVerified);
+
+    // Начинаем выплату джекпота
     let amount = ticket_jackpot.total_amount;
     **ticket_jackpot.to_account_info().try_borrow_mut_lamports()? -= amount as u64;
     **ctx.accounts.winner.to_account_info().try_borrow_mut_lamports()? += amount as u64;
 
-    // Обновляем состояние
     ticket_jackpot.is_claimed = true;
-    ticket_jackpot.winner = winner_pubkey;
+    ticket_jackpot.winner = ctx.accounts.winner.key();
     ticket_account.is_active = false;
 
+    // Отправляем событие в логчейн
     log_event!(JackpotClaimEvent {
         ticket_id,
-        winner: winner_pubkey,
+        winner: ctx.accounts.winner.key(),
         amount,
-        chunk_index,
-        index_in_chunk,
-        timestamp: clock.unix_timestamp as u64,
+        chunk_index: last_chunk_index,
+        index_in_chunk: position_in_last_chunk,
+        timestamp: Clock::get()?.unix_timestamp as u64,
     });
 
     Ok(())
@@ -98,14 +141,11 @@ pub struct ClaimJackpot<'info> {
     pub winner_participants_chunk: Account<'info, ParticipantsChunk>,
 
     #[account(mut)]
-    pub admin: Signer<'info>,
+    pub user: Signer<'info>,
 
     /// CHECK: Winner receives jackpot
     #[account(mut)]
     pub winner: AccountInfo<'info>,
-
-    /// CHECK: Switchboard randomness account
-    pub randomness_account_data: AccountInfo<'info>,
 
     pub system_program: Program<'info, System>,
 }

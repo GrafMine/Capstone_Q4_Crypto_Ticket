@@ -27,11 +27,29 @@ pub enum ErrorCode {
     #[msg("Invalid chunk address")]
     InvalidChunkAddress,
 
+    #[msg("Invalid chunk data")]
+    InvalidChunkData,
+
+    #[msg("Participant count mismatch")]
+    ParticipantCountMismatch,
+
+    #[msg("Missing chunks")]
+    MissingChunks,
+
+    #[msg("Invalid chunk sequence")]
+    InvalidChunkSequence,
+
+    #[msg("Invalid timestamp sequence")]
+    InvalidTimestampSequence,
+
     #[msg("Ticket is still active")]
     TicketStillActive,
 
     #[msg("Invalid winner")]
     InvalidWinner,
+
+    #[msg("Winner not verified")]
+    WinnerNotVerified,
 
     #[msg("Invalid randomness data")]
     InvalidRandomnessData,
