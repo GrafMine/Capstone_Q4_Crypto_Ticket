@@ -11,6 +11,8 @@ use anchor_lang::prelude::*;
 pub use constants::*;
 pub use instructions::{
     initialize::*,
+    finish::*,
+    claim::*,
     // cleanup::*,
     ticket::*,
     // claim::*
@@ -25,6 +27,7 @@ declare_id!("8sKVvV5NTamS36qakrS7qm45W2xxgmXPMrmGn4NH2gsm");
 
 #[program]
 pub mod crypto_ticket {
+
     use super::*;
 
         pub fn initialize(ctx: Context<Initialize>) -> Result<()> {
@@ -39,6 +42,22 @@ pub mod crypto_ticket {
         ) -> Result<()> {
             initialize_ticket(ctx, ticket_id, price)
         }
+
+        // Завершение билета
+        pub fn finish_ticket(
+            ctx: Context<FinishTicket>,
+            ticket_id: u64,
+        ) -> Result<()> {
+            fin_ticket(ctx, ticket_id)
+        }
+
+        // Выплатить джекпот
+        // pub fn claim_jackpot_handler<'info>(
+        //     ctx: Context<'info, 'info, 'info, 'info, ClaimJackpot<'info>>,
+        //     ticket_id: u64,
+        // ) -> Result<()> {
+        //     claim_jackpot(ctx, ticket_id)
+        // }
 
         // Инициализация чанка участников
         // pub fn init_participants_chunk(

@@ -28,9 +28,11 @@ pub struct FinishTicket<'info> {
 
     #[account(mut)]
     pub user: Signer<'info>,
+
+    pub system_program: Program<'info, System>,
 }
 
-pub fn finish_ticket(ctx: Context<FinishTicket>, ticket_id: u64) -> Result<()> {
+pub fn fin_ticket(ctx: Context<FinishTicket>, ticket_id: u64) -> Result<()> {
     let ticket_account = &mut ctx.accounts.ticket_account;
     let ticket_jackpot = &ctx.accounts.ticket_jackpot;
 
