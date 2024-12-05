@@ -53,7 +53,7 @@ pub mod crypto_ticket {
 
         // Выплатить джекпот
         pub fn claim_jackpot_handler<'info>(
-            ctx: Context<'info, 'info, 'info, 'info, ClaimJackpot<'info>>,
+            ctx: Context<'_, '_, 'info, 'info, ClaimJackpot<'info>>,
             ticket_id: u64,
         ) -> Result<()> {
             claim_jackpot(ctx, ticket_id)

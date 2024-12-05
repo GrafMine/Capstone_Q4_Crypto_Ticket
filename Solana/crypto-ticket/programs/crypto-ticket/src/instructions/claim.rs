@@ -5,7 +5,7 @@ use crate::error::ErrorCode;
 use crate::log_event;
 use anchor_lang::prelude::*;
 
-pub fn claim_jackpot<'info>(ctx: Context<'info, 'info, 'info, 'info, ClaimJackpot<'info>>, ticket_id: u64) -> Result<()> {
+pub fn claim_jackpot<'info>(ctx: Context<'_, '_, 'info, 'info, ClaimJackpot<'info>>, ticket_id: u64) -> Result<()> {
     let ticket_account = &mut ctx.accounts.ticket_account;
     let ticket_jackpot = &mut ctx.accounts.ticket_jackpot;
     
@@ -31,6 +31,7 @@ pub fn claim_jackpot<'info>(ctx: Context<'info, 'info, 'info, 'info, ClaimJackpo
     let mut is_winner_verified = false;
 
     for (i, chunk_account) in ctx.remaining_accounts.iter().enumerate() {
+        let chunk_account: &AccountInfo<'info> = chunk_account;
         
         let chunk_data = Account::<ParticipantsChunk>::try_from(chunk_account)?;
 
