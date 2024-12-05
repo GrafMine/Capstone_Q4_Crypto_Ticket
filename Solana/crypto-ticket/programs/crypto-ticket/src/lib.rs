@@ -52,12 +52,12 @@ pub mod crypto_ticket {
         }
 
         // Выплатить джекпот
-        // pub fn claim_jackpot_handler<'info>(
-        //     ctx: Context<'info, 'info, 'info, 'info, ClaimJackpot<'info>>,
-        //     ticket_id: u64,
-        // ) -> Result<()> {
-        //     claim_jackpot(ctx, ticket_id)
-        // }
+        pub fn claim_jackpot_handler<'info>(
+            ctx: Context<'info, 'info, 'info, 'info, ClaimJackpot<'info>>,
+            ticket_id: u64,
+        ) -> Result<()> {
+            claim_jackpot(ctx, ticket_id)
+        }
 
         // Инициализация чанка участников
         // pub fn init_participants_chunk(
