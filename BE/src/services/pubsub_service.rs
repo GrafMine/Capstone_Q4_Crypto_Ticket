@@ -7,7 +7,8 @@ use solana_sdk::commitment_config::CommitmentConfig;
 use futures_util::StreamExt;
 use std::sync::Arc;
 
-use crate::constants::LOG_EVENT_KEY;
+use crate::utils::helpers::get_env_var;
+
 
 pub struct PubSubService {
     client: Arc<PubsubClient>,
@@ -58,7 +59,7 @@ impl PubSubService {
     
         while let Some(log) = logs.next().await {
             
-            let event_prefix = format!("Program log: {}:{}:", LOG_EVENT_KEY, event_type);
+            let event_prefix = format!("Program log: {}:{}:", get_env_var("LOG_EVENT_KEY"), event_type);
             
             println!("Received log: {:?}", log);
             println!("event_prefix: {:?}", event_prefix);

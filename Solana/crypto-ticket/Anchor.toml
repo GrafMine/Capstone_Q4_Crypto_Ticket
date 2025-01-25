@@ -11,7 +11,7 @@ crypto_ticket = "8sKVvV5NTamS36qakrS7qm45W2xxgmXPMrmGn4NH2gsm"
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "Localnet"
+cluster = "devnet"
 wallet = "./solana/id.json"
 
 [scripts]

@@ -1,65 +1,146 @@
 use super::{cell::Cell, direction::Direction};
 
-pub struct GameField {
-    field: Vec<Vec<Cell>>,
+pub struct GameFieldService {
+    rows: usize,
+    cols: usize,
+    field: Vec<Cell>,
 }
 
-impl GameField {
-    fn new(size: usize) -> Self {
-        let colors = vec!["red", "green", "blue", "yellow"];
+impl GameFieldService {
+    pub fn new(size: usize) -> Self {
         let mut field = vec![];
-        for y in 0..size {
-            let mut row = vec![];
-            for x in 0..size {
-                let color = colors[(y * size + x) % colors.len()].to_string();
-                row.push(Cell::new(color, x, y, size));
-            }
-            field.push(row);
+
+        for id in 0..(size * size) {
+            field.push(Cell::new(id));
         }
-        GameField { field }
+
+        Self { rows:size, cols:size, field }
+    }
+
+    pub fn move_cell(&mut self, start_id: usize, direction: Direction, diff: usize) {
+        let mut current_id = start_id;
+        let mut steps = 0;
+
+        while steps < diff {
+            if let Some(next_id) = self.calculate_target(current_id, direction) {
+                println!(
+                    "Step {}: move cell from index {} to index {} in direction {:?}",
+                    steps + 1,
+                    current_id,
+                    next_id,
+                    direction
+                );
+
+                let current_cell = self.get_cell_by_index(current_id).clone();
+                self.field[next_id] = current_cell;
+
+                current_id = next_id;
+                steps += 1;
+            } else {
+                println!(
+                    "The cell {} cannot move to {:?} (reached end of field).",
+                    current_id, direction
+                );
+                break;
+            }
+        }
+    }
+
+    pub fn print_field(&self) {
+        for i in 0..self.rows {
+            for j in 0..self.cols {
+                let index = i * self.cols + j;
+                print!("{} ", self.field[index].id);
+            }
+            println!(); // Новий рядок після кожного рядка
+        }
     }
 
     fn get_cell_by_index(&self, index: usize) -> &Cell {
-        let size = self.field.len();
-        let y = index / size;
-        let x = index % size;
-        &self.field[y][x]
+        &self.field[index]
+    }
+    
+    fn get_cell_by_index_mut(&mut self, index: usize) -> &mut Cell {
+        &mut self.field[index]
     }
 
-    fn get_moving_cells(&self) -> Vec<&Cell> {
-        self.field
-            .iter()
-            .flat_map(|row| row.iter())
-            .filter(|cell| cell.move_direction.is_some())
-            .collect()
-    }
+    pub fn calculate_target(&self, start_id: usize, direction: Direction) -> Option<usize> {
+        let row = start_id / self.cols; // Поточний рядок
+        let col = start_id % self.cols; // Поточний стовпець
 
-    fn apply_movement(&mut self, path: Vec<usize>, direction: Direction) {
-        for i in (1..path.len()).rev() {
-            let current_index = path[i];
-            let next_index = path[i - 1];
-    
-            let next_color = {
-                let next_cell = self.get_cell_by_index(next_index);
-                next_cell.current_color.clone() // Clone ensures we have a copy
-            };
-    
-            let current_cell = self.get_cell_by_index_mut(current_index);
-    
-            if current_cell.next_color == Some(next_color.clone()) {
-                panic!("Invalid movement");
+        let (new_row, new_col) = match direction {
+            Direction::Top => (
+                if row > 0 { row - 1 } else { row },
+                col,
+            ),
+            Direction::Bottom => (
+                if row < self.rows - 1 { row + 1 } else { row },
+                col,
+            ),
+            Direction::Left => (
+                row,
+                if col > 0 { col - 1 } else { col },
+            ),
+            Direction::Right => (
+                row,
+                if col < self.cols - 1 { col + 1 } else { col },
+            ),
+            Direction::TopRight => {
+                let new_row = if row > 0 { row - 1 } else { row };
+                let new_col = if col < self.cols - 1 { col + 1 } else { col };
+
+                if new_row == row && new_col != col {
+                    (row, new_col)
+                } else if new_col == col && new_row != row {
+                    (new_row, col)
+                } else {
+                    (new_row, new_col)
+                }
             }
-    
-            current_cell.next_color = Some(next_color);
-            current_cell.move_direction = Some(direction);
+            Direction::TopLeft => {
+                let new_row = if row > 0 { row - 1 } else { row };
+                let new_col = if col > 0 { col - 1 } else { col };
+
+                if new_row == row && new_col != col {
+                    (row, new_col)
+                } else if new_col == col && new_row != row {
+                    (new_row, col)
+                } else {
+                    (new_row, new_col)
+                }
+            }
+            Direction::BottomRight => {
+                let new_row = if row < self.rows - 1 { row + 1 } else { row };
+                let new_col = if col < self.cols - 1 { col + 1 } else { col };
+
+                if new_row == row && new_col != col {
+                    (row, new_col)
+                } else if new_col == col && new_row != row {
+                    (new_row, col)
+                } else {
+                    (new_row, new_col)
+                }
+            }
+            Direction::BottomLeft => {
+                let new_row = if row < self.rows - 1 { row + 1 } else { row };
+                let new_col = if col > 0 { col - 1 } else { col };
+
+                if new_row == row && new_col != col {
+                    (row, new_col)
+                } else if new_col == col && new_row != row {
+                    (new_row, col)
+                } else {
+                    (new_row, new_col)
+                }
+            }
+        };
+
+        if new_row < self.rows && new_col < self.cols {
+            Some(new_row * self.cols + new_col)
+        } else {
+            None
         }
     }
-
-    fn get_cell_by_index_mut(&mut self, index: usize) -> &mut Cell {
-        let size = self.field.len();
-        let y = index / size;
-        let x = index % size;
-        &mut self.field[y][x]
-    }
+    
     
 }

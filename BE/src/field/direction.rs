@@ -1,7 +1,11 @@
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Direction {
-    UpRight,
-    DownLeft,
-    UpLeft,
-    DownRight,
+    Top,
+    Bottom,
+    Left,
+    Right,
+    TopRight,
+    TopLeft,
+    BottomRight,
+    BottomLeft,
 }
