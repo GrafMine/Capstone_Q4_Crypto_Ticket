@@ -1,11 +1,8 @@
 use diesel::prelude::*;
 use chrono::NaiveDateTime;
 
-use crate::db::schema::tickets;
-
-
 #[derive(Queryable, Debug, Insertable, AsChangeset)]
-#[diesel(table_name = tickets)]
+#[diesel(table_name = crate::db::schema::Ticket)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Ticket {
     pub pubkey: String,

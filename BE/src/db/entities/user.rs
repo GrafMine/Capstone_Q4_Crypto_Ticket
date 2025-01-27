@@ -1,10 +1,8 @@
 use diesel::prelude::*;
 use chrono::NaiveDateTime;
 
-use crate::db::schema::users;
-
 #[derive(Queryable, Debug, Insertable, AsChangeset)]
-#[diesel(table_name = users)]
+#[diesel(table_name = crate::db::schema::User)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct User {
     pub pubkey: String,

@@ -1,5 +1,5 @@
 diesel::table! {
-    tickets (pubkey) {
+    my_schema.Ticket (pubkey) {
         pubkey -> Text,
         currency -> Text,
         entry_fee -> Integer,
@@ -15,7 +15,7 @@ diesel::table! {
 }
 
 diesel::table! {
-    users (pubkey) {
+    my_schema.User (pubkey) {
         pubkey -> Text,
         username -> Nullable<Text>,
         email -> Nullable<Text>,

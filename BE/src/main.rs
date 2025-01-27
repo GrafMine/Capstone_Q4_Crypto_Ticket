@@ -4,8 +4,10 @@ mod field;
 mod routes;
 mod services;
 mod utils;
+mod tests;
 
 use actix_web::{web, App, HttpServer};
+use db::{entities::user::User, repositories::{repository::Repository, user_repository}};
 use diesel::{Connection, PgConnection};
 use std::{env, sync::Arc};
 use ticket_initialized_event::TicketInitializedEvent;
@@ -52,8 +54,19 @@ async fn main() -> std::io::Result<()> {
     });
 
     let conn = establish_connection();
-    let app_state = web::Data::new(AppState {
-        db_conn: Mutex::new(conn),
+    let mut user_repository = user_repository::UserRepository::new(conn);
+    
+    let create = user_repository.create(User {
+        pubkey:"123".to_string(),
+        username:Some("Ihor".to_string()),
+        email:Some("movigos@gmail.com".to_string()), 
+        total_earnings: todo!(), 
+        withdrawn_earnings: todo!(), 
+        perfect_combinations_won: todo!(), 
+        created_at: todo!(), 
+        total_earnings_rank: todo!(), 
+        withdrawn_earnings_rank: todo!(), 
+        perfect_combinations_rank: todo!()
     });
 
     // Start the Actix Web server
